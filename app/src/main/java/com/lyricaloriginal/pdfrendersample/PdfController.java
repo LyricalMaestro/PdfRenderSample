@@ -1,25 +1,31 @@
 package com.lyricaloriginal.pdfrendersample;
 
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.graphics.pdf.PdfRenderer;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
-import android.util.Log;
-import android.widget.ImageView;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
- * 表示中のPDFの操作等を行うModeクラスです。
+ * 表示中のPDFの操作等を行うModelクラスです。
  * <p/>
  * Created by LyricalMaestro on 15/07/30.
  */
 public class PdfController implements Parcelable {
 
+    public static final Parcelable.Creator<PdfController> CREATOR
+            = new Parcelable.Creator<PdfController>() {
+        public PdfController createFromParcel(Parcel in) {
+            return new PdfController(in);
+        }
+
+        public PdfController[] newArray(int size) {
+            return new PdfController[size];
+        }
+    };
     private final File mPdfFile;
     private int mCurrentPage = -1;
     private int mPageNum = -1;
@@ -38,6 +44,12 @@ public class PdfController implements Parcelable {
         }
     }
 
+    private PdfController(Parcel in) {
+        mPdfFile = new File(in.readString());
+        mCurrentPage = in.readInt();
+        mPageNum = in.readInt();
+    }
+
     /**
      * 参照しているpdf ファイル名を取得します。
      *
@@ -47,14 +59,29 @@ public class PdfController implements Parcelable {
         return mPdfFile.getName();
     }
 
+    /**
+     * 現在参照中のページを取得します。
+     *
+     * @return 現在参照中のページ
+     */
     public int getCurrentPage() {
         return mCurrentPage;
     }
 
+    /**
+     * pdf の総ページ数を取得します。
+     *
+     * @return pdf の総ページ数
+     */
     public int getPageNum() {
         return mPageNum;
     }
 
+    /**
+     * 次のページに移動します。
+     *
+     * @return　true:移動に成功, false:移動に失敗
+     */
     public boolean nextPage() {
         if (mPageNum <= 0) {
             return false;
@@ -66,6 +93,11 @@ public class PdfController implements Parcelable {
         return false;
     }
 
+    /**
+     * 前のページに移動します。
+     *
+     * @return　true:移動に成功, false:移動に失敗
+     */
     public boolean prevPage() {
         if (mPageNum <= 0) {
             return false;
@@ -77,6 +109,11 @@ public class PdfController implements Parcelable {
         return false;
     }
 
+    /**
+     * 最初のページに移動します。
+     *
+     * @return　true:移動に成功, false:移動に失敗
+     */
     public boolean toStartPage() {
         if (mPageNum <= 0) {
             return false;
@@ -85,6 +122,11 @@ public class PdfController implements Parcelable {
         return true;
     }
 
+    /**
+     * 最後のページに移動します。
+     *
+     * @return　true:移動に成功, false:移動に失敗
+     */
     public boolean toEndPage() {
         if (mPageNum <= 0) {
             return false;
@@ -93,6 +135,12 @@ public class PdfController implements Parcelable {
         return true;
     }
 
+    /**
+     * 現在参照中のページの中身を読み込みます。
+     *
+     * @throws IOException
+     * @return　ページの中身を読み込んだBitmapオブジェクト
+     */
     public Bitmap loadPageBitmap() throws IOException {
         Bitmap bmp = null;
         try (ParcelFileDescriptor fd = ParcelFileDescriptor.open(mPdfFile,
@@ -119,22 +167,5 @@ public class PdfController implements Parcelable {
         dest.writeString(mPdfFile.getAbsolutePath());
         dest.writeInt(mCurrentPage);
         dest.writeInt(mPageNum);
-    }
-
-    public static final Parcelable.Creator<PdfController> CREATOR
-            = new Parcelable.Creator<PdfController>() {
-        public PdfController createFromParcel(Parcel in) {
-            return new PdfController(in);
-        }
-
-        public PdfController[] newArray(int size) {
-            return new PdfController[size];
-        }
-    };
-
-    private PdfController(Parcel in) {
-        mPdfFile = new File(in.readString());
-        mCurrentPage = in.readInt();
-        mPageNum = in.readInt();
     }
 }
